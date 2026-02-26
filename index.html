@@ -3,46 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Secure Bypass Player</title>
+    <title>Nova Sport 1 HD - Player</title>
     <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
     <style>
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; font-family: sans-serif; }
         .video-js { width: 100% !important; height: 100% !important; }
+        
+        /* Styl pro návod při blokaci */
+        #blocker-notice {
+            position: absolute; inset: 0; background: #1a1a1a; color: white;
+            display: none; flex-direction: column; align-items: center; justify-content: center;
+            text-align: center; padding: 20px; z-index: 9999; border: 2px solid #e74c3c;
+        }
+        .btn-fix { background: #e74c3c; color: white; padding: 12px 24px; border-radius: 5px; text-decoration: none; font-weight: bold; margin-top: 15px; cursor: pointer; border: none; }
+        .icon { font-size: 50px; margin-bottom: 10px; }
     </style>
 </head>
 <body>
 
-    <video-js id="my-video" class="vjs-default-skin" controls preload="auto"></video-js>
+<div id="blocker-notice">
+    <div class="icon">🔒</div>
+    <h2>Stream je blokován prohlížečem</h2>
+    <p>Tento stream běží na HTTP, ale GitHub vyžaduje HTTPS.</p>
+    <p><b>PRO SPUŠTĚNÍ:</b> Klikněte v adresním řádku na <b>ikonu zámku</b> -> <b>Nastavení webu</b> -> <b>Nezabezpečený obsah</b> -> nastavte <b>POVOLIT</b>. Poté stránku obnovte (F5).</p>
+    <button class="btn-fix" onclick="location.reload()">MÁM POVOLENO - OBNOVIT</button>
+</div>
 
-    <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
-    <script>
-        // Tato proxy se pokusí "převléknout" HTTP na HTTPS tak, aby prohlížeč neprotestoval
-        const target = "188.175.250.66/dash/CH_NOVA_SPORT1_HD.ism/playlist.mpd";
-        const proxy = "https://corsproxy.io/?" + encodeURIComponent(target);
+<video-js id="player" class="vjs-default-skin vjs-big-play-centered" controls preload="auto"></video-js>
 
-        var player = videojs('my-video', {
-            autoplay: true,
-            muted: true,
-            html5: {
-                vhs: { 
-                    overrideNative: true,
-                    // Zkusíme vynutit, aby i všechny kousky videa (.m4s) jely přes HTTPS proxy
-                    proxyUrl: "https://corsproxy.io/?" 
-                },
-                dash: {
-                    setHttpHeaders: {
-                        'User-Agent': 'stremujeme.to/9.8 (Linux;Android 14) AndroidXMedia3/1.1.1'
-                    }
+<script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
+<script>
+    const streamUrl = "http://188.175.250.66/dash/CH_NOVA_SPORT1_HD.ism/playlist.mpd";
+    const player = videojs('player', {
+        autoplay: true,
+        muted: true,
+        fluid: true,
+        html5: {
+            dash: {
+                setHttpHeaders: {
+                    'User-Agent': 'stremujeme.to/9.8 (Linux;Android 14) AndroidXMedia3/1.1.1'
                 }
             }
-        });
+        }
+    });
 
-        player.src({ src: proxy, type: 'application/dash+xml' });
+    player.src({ src: streamUrl, type: 'application/dash+xml' });
 
-        player.on('error', function() {
-            const err = player.error();
-            console.log("Detail chyby:", err.code, err.message);
-        });
-    </script>
+    // Detekce chyby Mixed Content
+    player.on('error', function() {
+        const err = player.error();
+        // Pokud je chyba sítě (kód 2) nebo zdroje (kód 4), pravděpodobně jde o blokaci
+        if (err.code === 2 || err.code === 4) {
+            document.getElementById('blocker-notice').style.display = 'flex';
+        }
+    });
+
+    // Kontrola, zda se video po 5 sekundách nenačetlo
+    setTimeout(() => {
+        if (player.readyState() === 0) {
+            document.getElementById('blocker-notice').style.display = 'flex';
+        }
+    }, 5000);
+</script>
+
 </body>
 </html>
