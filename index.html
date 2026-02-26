@@ -17,7 +17,7 @@
     <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
     <script>
         // Tato proxy se pokusí "převléknout" HTTP na HTTPS tak, aby prohlížeč neprotestoval
-        const target = "http://188.175.250.66/dash/CH_NOVA_SPORT1_HD.ism/playlist.mpd";
+        const target = "188.175.250.66/dash/CH_NOVA_SPORT1_HD.ism/playlist.mpd";
         const proxy = "https://corsproxy.io/?" + encodeURIComponent(target);
 
         var player = videojs('my-video', {
