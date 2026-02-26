@@ -3,48 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stream Test Fix</title>
     <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
     <style>
-        body { margin: 0; background: #000; color: #fff; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; text-align: center; }
-        .vjs-matrix.video-js { border: 2px solid #e74c3c; }
-        .instructions { background: rgba(231, 76, 60, 0.2); padding: 15px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #e74c3c; max-width: 600px; }
+        /* Odstraní okraje, aby v Iframe byl jen přehrávač */
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; }
+        .video-js { width: 100% !important; height: 100% !important; }
     </style>
 </head>
 <body>
 
-<div class="instructions">
-    <h3>⚠️ DŮLEŽITÝ KROK PRO ZOBRAZENÍ:</h3>
-    <p>V adresním řádku klikni na <b>ikonu zámku</b> -> <b>Nastavení webu</b> -> najdi <b>Nezabezpečený obsah</b> a dej <b>Povolit</b>. Poté stránku obnov (F5).</p>
-</div>
-
-<div style="width: 80%; max-width: 800px;">
-    <video-js id="my-video" class="vjs-default-skin vjs-big-play-centered vjs-16-9" controls preload="auto">
+    <video-js id="my-video" class="vjs-default-skin vjs-big-play-centered" controls preload="auto">
         <source src="http://188.175.250.66/dash/CH_NOVA_SPORT1_HD.ism/playlist.mpd" type="application/dash+xml">
     </video-js>
-</div>
 
-<script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
-<script>
-    var player = videojs('my-video', {
-        autoplay: true,
-        muted: true, // KLÍČOVÉ: Vyřeší chybu "NotAllowedError"
-        fluid: true,
-        html5: {
-            dash: {
-                setHttpHeaders: {
-                    'User-Agent': 'stremujeme.to/9.8 (Linux;Android 14) AndroidXMedia3/1.1.1'
+    <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
+    <script>
+        var player = videojs('my-video', {
+            autoplay: true,
+            muted: true, // Nutné pro automatický start v Iframe
+            html5: {
+                dash: {
+                    setHttpHeaders: {
+                        'User-Agent': 'stremujeme.to/9.8 (Linux;Android 14) AndroidXMedia3/1.1.1'
+                    }
                 }
             }
-        }
-    });
-
-    player.ready(function() {
-        console.log('Zkouším přehrát...');
-        player.play().catch(function(error) {
-            console.log("Autoplay zablokován i přes ztlumení:", error);
         });
-    });
-</script>
+    </script>
 </body>
 </html>
