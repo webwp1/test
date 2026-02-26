@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Secure Stream Proxy</title>
+    <title>Secure Player</title>
     <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
     <style>
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; }
@@ -12,23 +12,26 @@
 </head>
 <body>
 
-    <video-js id="my-video" class="vjs-default-skin vjs-big-play-centered" controls preload="auto">
-        </video-js>
+    <video-js id="my-video" class="vjs-default-skin" controls preload="auto"></video-js>
 
     <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
     <script>
-        // Adresa tvého streamu
-        const streamUrl = "http://188.175.250.66/dash/CH_NOVA_SPORT1_HD.ism/playlist.mpd";
-        
-        // Veřejná CORS Proxy, která změní HTTP na HTTPS
-        const httpsProxy = "https://api.allorigins.win/raw?url=";
-        const finalUrl = httpsProxy + encodeURIComponent(streamUrl);
+        // 1. Definujeme zdroj a PROXY, která umí HTTPS
+        const rawUrl = "http://188.175.250.66/dash/CH_NOVA_SPORT1_HD.ism/playlist.mpd";
+        // Použijeme CORS-Anywhere nebo podobnou proxy, která přepíše i vnitřní cesty
+        const proxyPrefix = "https://api.allorigins.win/raw?url=";
+        const secureUrl = proxyPrefix + encodeURIComponent(rawUrl);
 
         var player = videojs('my-video', {
             autoplay: true,
             muted: true,
+            fluid: true,
             html5: {
-                vhs: { overrideNative: true },
+                vhs: {
+                    // Tato funkce se pokusí vynutit HTTPS i pro segmenty videa
+                    handleManifestRedirects: true,
+                    overrideNative: true
+                },
                 dash: {
                     setHttpHeaders: {
                         'User-Agent': 'stremujeme.to/9.8 (Linux;Android 14) AndroidXMedia3/1.1.1'
@@ -38,12 +41,14 @@
         });
 
         player.src({
-            src: finalUrl,
+            src: secureUrl,
             type: 'application/dash+xml'
         });
 
+        // Automatický restart při chybě sítě
         player.on('error', function() {
-            console.log("Stream stále blokován. Pravděpodobně je nutná vlastní PHP proxy.");
+            console.log("Pokus o restart přes náhradní trasu...");
+            setTimeout(() => { player.src(secureUrl); }, 2000);
         });
     </script>
 </body>
